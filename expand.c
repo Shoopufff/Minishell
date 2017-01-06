@@ -1,8 +1,8 @@
 /*    $Id: $    */
 /*
    Eric Ambrose
-   February 28, 2014
-   Assignment 5
+   March 14, 2014
+   Assignment 6
    Expand.c
 */
 
@@ -23,6 +23,13 @@
 
 #include "proto.h"
 
+//Set bits for Flags as in main
+#define PIPE 0x01   /* 0000 0001 */
+#define STATEMENTS 0x02   /* 0000 0010 */
+#define EXPAND 0x04   /* 0000 0100 */
+#define WAIT 0x08   /* 0000 1000 */
+#define REDIRECTION 0x10 /* 0001 0000 */
+
 //Use in $n to reverse number read as it
 //is read backwards during processing.
 int reverseint(int number){
@@ -32,7 +39,6 @@ int reverseint(int number){
         inverse = inverse * 10 + (number%10);
         number = number / 10;
     }
-    
 	return inverse;
 }
 
@@ -66,6 +72,8 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 	extern char **ArgvG;
 	extern int ShiftOffset;
 	extern int status;
+	extern int FLAGS;
+	extern int whilestatement;
 	//extern int SIGNAL;
 	
 	//Use Password Struct to get directories for use in ~
@@ -94,6 +102,11 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 	memset(PipeBuffer, 0, 1024);
 	size_t len;
 	
+	extern int pipehit;
+	extern int RedirectionHit;
+	extern int ExpandHit;
+	
+	ExpandHit = 1;
 	
 	//Clear expandline for recurring runs
 	for (i=0; i<EXPANDLEN; i++){
@@ -122,8 +135,25 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 				commentquote = 1;
 			}
 		}
-		//Don't expand and print regular output if not $ * or ~ symbol
+		//Don't expand and print regular output if not $ * ~ or # symbol
 		if (line[i] != ('$' || '~' || '*' || '#')) {
+			//Check for pipes or redirection for input
+			//Ignore if inside comment or double quotes
+			if (line[i] == '|'){
+				if (commentquote != 1){
+					pipehit = 1;
+				}
+			}
+			if (line[i] == '>'){
+				if (commentquote != 1){
+					RedirectionHit = 1;
+				}
+			}
+			if (line[i] == '<'){
+				if (commentquote != 1){
+					RedirectionHit = 1;
+				}
+			}
 			expandedline[temp] = line[i];
 		}
 		//If commentted line ignore. Make sure it 
@@ -136,6 +166,25 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 				commented = 1;
 			}
 		}
+		//Statement Processing Directly follows Possible Comments if 
+		//Applicable, check for leading if Statement or While
+		if ((commentquote != 1) && line[i] == ('i' || 'I')) {
+			if ((i+1 <= slength) && (line[i+1] == ('f' || 'F'))){
+				//if Statement found!
+			}
+		}		
+		if ((commentquote != 1) && (line[i] == ('w' || 'W'))) {
+			if ((i+1 <= slength) && (line[i+1] == ('h' || 'H'))){
+				if ((i+1 <= slength) && (line[i+1] == ('i' || 'I'))){
+					if ((i+1 <= slength) && (line[i+1] == ('l' || 'L'))){
+						if ((i+1 <= slength) && (line[i+1] == ('e' || 'E'))){
+							//While Statement Found!
+							whilestatement = 1;
+						}
+					}
+				}
+			}
+		}			
 		//Processing for ~ Get Home Directory of Appropriate User
 		//~ alone is User running shell, otherwise ~ followed 
 		//by a username is the directory of the user named.
@@ -344,7 +393,7 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 					if(pipe(fd) < 0){
 						perror("pipe");
 					}
-					processline(Command, fd[1], 1);
+					processline(Command, fd[0], fd[1], FLAGS);
 					//Close write end of pipe
 					close(fd[1]);
 					//read pipe to put into expandline
@@ -574,7 +623,7 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 				else{
 					expandedline[temp] = line[i];
 				}
-			}
+			}					
 		}
 	}
 			
