@@ -1,8 +1,8 @@
 /*    $Id: $    */
 /*
    Eric Ambrose
-   February 14, 2014
-   Assignment 4
+   February 28, 2014
+   Assignment 5
    Arg_Parse
 */
 
@@ -38,6 +38,7 @@ int arg_parse(char *line, char ***argvp)
 				 //sections as necessary to put into Mpointer array
 	int firstpass;
 	int quotecount = 0;
+	//extern int SIGNAL;
 	
 	//count the number of leading spaces as to ignore them when counting args
 	for (i=0; i < slength; i++, dest++){

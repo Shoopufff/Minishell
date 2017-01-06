@@ -9,8 +9,8 @@
 
 /*
    Eric Ambrose
-   February 14, 2014
-   Assignment 4
+   February 28, 2014
+   Assignment 5
    Msh.c
 */
 
@@ -21,13 +21,15 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <pwd.h>
+#include <signal.h>
 
 #include "proto.h"
 
 /* Constants */
 
 #define LINELEN 1024
-#define EXPANDLEN 2000
+#define EXPANDLEN 200000
 
 // Global variable//
 
@@ -37,10 +39,7 @@ int ShiftArgc;
 int ShiftOffset;
 int status;
 int ShiftCheck;
-
-/* Prototypes */
-
-void processline (char *line);
+int SIGNAL; 
 
 /* Shell main */
 
@@ -50,13 +49,18 @@ int main (int mainargc, char **mainargv)
     int    len;
 	char *mode = "r";
 	int initialize = 1;
-	
+	//Store P1 environment if exists
+	char* P1 = getenv("P1");	
+
 	//Initialize global argc and argv
 	ArgcG = mainargc - 1; //not including script name
 	ArgvG = mainargv; // arg[0] is shell name
 	
 	ShiftArgc = ArgcG;
 	ShiftOffset = 0;
+	
+	//Handle SIGINT if occurs
+	signal(SIGINT, signalHandler);
 	
 	//Check if there was an attempt to include a Script
 	if ((mainargc > 1) && (initialize == 1)) {
@@ -75,7 +79,10 @@ int main (int mainargc, char **mainargv)
         /* prompt and get line */
 	if (mainargc ==  1){		
 		ShiftCheck = 1;
-		fprintf (stderr, "%% ");
+		if (P1 == NULL)
+			fprintf (stderr, "%% ");
+		else 
+			fprintf (stderr, P1);
 	}
 	
 	if (fgets (buffer, LINELEN, stdin) != buffer)
@@ -87,7 +94,7 @@ int main (int mainargc, char **mainargv)
 	    buffer[len-1] = 0;
 
 	/* Run it ... */
-	processline (buffer);
+	processline (buffer, 1, 1);
 
     }
 
@@ -104,7 +111,7 @@ int main (int mainargc, char **mainargv)
 }
 
 
-void processline (char *line)
+void processline(char *line, int outfd, int waitFlag)
 {
     pid_t  cpid;
 	int argcount;
@@ -120,7 +127,7 @@ void processline (char *line)
 	
 	//No arguments so no processing can be done
 	if (argcount == 0){
-		printf("No arguments were given\n");
+		fprintf(stderr, "No arguments were given\n");
 		return;
 	}
 	
@@ -138,9 +145,15 @@ void processline (char *line)
     /* Check for who we are! */
     if (cpid == 0) {
       /* We are the child! */
-      execvp (argv[0], argv);
-      perror ("exec");
-      exit (127);
+	  
+		if ((dup2(outfd, 1)) < 0){
+			perror("dup");
+			return;
+		}
+		
+		execvp (argv[0], argv);
+		perror ("exec");
+		exit (127);
     }
 	
     /* Have the parent wait for child to complete */
@@ -148,6 +161,14 @@ void processline (char *line)
       perror ("wait");
 	
     free(argv);
+	
+}
+
+void signalHandler(int sig_num)
+{
+    //Just ignore SIGINT
+    signal(SIGINT, signalHandler);
+	SIGNAL = 1;
 	
 }
 

@@ -1,8 +1,8 @@
 #    $Id: $
 #Eric Ambrose
 #Makefile
-#Assignment 4
-#February 14, 2014
+#Assignment 5
+#February 28, 2014
 #CSCI 352 W14
 
 CC=gcc

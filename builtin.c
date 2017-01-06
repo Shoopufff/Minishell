@@ -1,8 +1,8 @@
 /*    $Id: $    */
 /*
    Eric Ambrose
-   February 14, 2014
-   Assignment 4
+   February 28, 2014
+   Assignment 5
    Builtin.c
 */
 
@@ -28,10 +28,12 @@ extern char **ArgvG;
 extern int ShiftArgc;
 extern int ShiftOffset;
 extern int ShiftCheck;
+extern int status;
+//extern int SIGNAL;
 
 void quit(int argc, char **argv) {
 	int value;
-	printf("Exiting the program....\n");
+	fprintf(stderr, "Exiting...\n");
 	if (argc ==1){
 		exit(0);
 	}
@@ -229,6 +231,33 @@ void sstat(int argc, char **argv){
 	}	
 }
 
+void Read (int argc, char **argv){
+
+	char line[256];
+	//used to remove newline characters
+	char *newline;
+	
+	if (argc == 1){
+		fprintf(stderr, "No name given\n");
+	}
+	
+	if (argc > 2){
+		fprintf(stderr, "Too many arguments. \n");
+	}
+	
+	else {
+		fprintf(stderr, "Please enter value for %s: ", argv[1]);
+		//Get user input and remove newline character if it exists
+		if ( fgets(line, 256, stdin) != NULL ){
+			newline = strchr(line, '\n'); 
+			if ( newline != NULL ){
+				*newline = '\0';
+			}
+		}
+		setenv(argv[1], line, 1);
+	}	
+}
+
 
 int builtin(int argc, char **argv){
 
@@ -263,6 +292,10 @@ int builtin(int argc, char **argv){
 	}
 	if (strcmp(argv[0], "sstat") == 0) {
 			sstat(argc, argv);
+			return 1;
+	}
+	if (strcmp(argv[0], "Read") == 0) {
+			Read(argc, argv);
 			return 1;
 	}
 	
