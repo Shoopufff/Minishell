@@ -1,8 +1,9 @@
 /*    $Id: $    */
+
 /*
    Eric Ambrose
-   January 22, 2014
-   Assignment 2
+   February 14, 2014
+   Assignment 4
    Proto.h
 */
 
@@ -11,3 +12,5 @@
 int builtin(int argc, char **argv);
 
 int arg_parse(char *line, char ***argvp);
+
+int expand (char *orig, char *new, int newsize);

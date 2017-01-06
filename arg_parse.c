@@ -1,8 +1,8 @@
 /*    $Id: $    */
 /*
    Eric Ambrose
-   January 22, 2014
-   Assignment 2
+   February 14, 2014
+   Assignment 4
    Arg_Parse
 */
 
@@ -17,7 +17,7 @@
 
 #include "proto.h"
 
-#define TEMPLEN 1024
+#define LINELEN 1024
 
 int arg_parse(char *line, char ***argvp)
 {
@@ -30,7 +30,7 @@ int arg_parse(char *line, char ***argvp)
 	int leadingspaces = 0;
 	int i; //index value counter
 	int ProcessingArg = 0; //Use as boolean for if arguments are being processed  
-	char templine[TEMPLEN] = { 0 };
+	char templine[LINELEN] = { 0 };
 	point = templine;
 	int temp = 0;
 	slength = strlen(line);
@@ -97,9 +97,6 @@ int arg_parse(char *line, char ***argvp)
 	*argvp = (char **)malloc(sizeof(char*)*(argcounter + 1)); 
 	Mpointer = *argvp;
 	int argloc[argcounter];
-	
-	printf("how many arguments?: %d\n", argcounter);
-	
 	
 	if (quotecount % 2 != 0 ){
 		fprintf(stderr, "There was uneven number of quotes\n");
@@ -194,7 +191,7 @@ int arg_parse(char *line, char ***argvp)
 	templine[temp] = '\0';
 	
 	for (i=0; i<slength; i++){
-	line[i] = templine[i];
+		line[i] = templine[i];
 	}
 	
 	count = 0;
@@ -203,7 +200,6 @@ int arg_parse(char *line, char ***argvp)
 		Mpointer[i] = &line[argloc[count]];
 		count++;
 	}
-	
 	
 	Mpointer[count] = '\0'; //Adding null pointer to end of the array
 	

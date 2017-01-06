@@ -9,8 +9,8 @@
 
 /*
    Eric Ambrose
-   January 22, 2014
-   Assignment 2
+   February 14, 2014
+   Assignment 4
    Msh.c
 */
 
@@ -24,30 +24,60 @@
 
 #include "proto.h"
 
-/* Constants */ 
+/* Constants */
 
 #define LINELEN 1024
+#define EXPANDLEN 2000
 
+// Global variable//
+
+int ArgcG;
+char** ArgvG;
+int ShiftArgc;
+int ShiftOffset;
+int status;
+int ShiftCheck;
 
 /* Prototypes */
 
 void processline (char *line);
 
-
 /* Shell main */
 
-int
-main (void)
+int main (int mainargc, char **mainargv)
 {
     char   buffer [LINELEN];
     int    len;
-
-    while (1) {
+	char *mode = "r";
+	int initialize = 1;
 	
-	printf("\\\n");
+	//Initialize global argc and argv
+	ArgcG = mainargc - 1; //not including script name
+	ArgvG = mainargv; // arg[0] is shell name
+	
+	ShiftArgc = ArgcG;
+	ShiftOffset = 0;
+	
+	//Check if there was an attempt to include a Script
+	if ((mainargc > 1) && (initialize == 1)) {
+		initialize = 0;
+		stdin = fopen(mainargv[1], mode);
+		if (stdin == NULL) {
+			fprintf(stderr, "Can't open file provided\n");
+			exit(127); //exit value given for no reachable file
+		}
+	}
+	
+    while (1) {
 
+	//Only display %% if Interactive run
+	//No Script or File provided.
         /* prompt and get line */
-	fprintf (stderr, "%% ");
+	if (mainargc ==  1){		
+		ShiftCheck = 1;
+		fprintf (stderr, "%% ");
+	}
+	
 	if (fgets (buffer, LINELEN, stdin) != buffer)
 	  break;
 
@@ -63,7 +93,8 @@ main (void)
 
     if (!feof(stdin))
         perror ("read");
-
+	
+	
     return 0;		/* Also known as exit (0); */
 }
 
@@ -71,16 +102,16 @@ main (void)
 void processline (char *line)
 {
     pid_t  cpid;
-    int status;
 	int argcount;
     char **argv;
-	//int i;
+	char expandedline[EXPANDLEN];
+	
+	if (expand(line, expandedline, EXPANDLEN)){
+		return;
+	}
+	
+    argcount = arg_parse(expandedline, &argv);
 
-    argcount = arg_parse(line, &argv);
-
-	/*for (i=0; i<argcount; i++){
-		printf("Processline says this is argv[%d] %s\n", i, argv[i]);
-	}*/
 	
 	//No arguments so no processing can be done
 	if (argcount == 0){
@@ -106,12 +137,13 @@ void processline (char *line)
       perror ("exec");
       exit (127);
     }
-
-    free(argv);
-    
+	
     /* Have the parent wait for child to complete */
-    if (wait (&status) < 0)
+    if (wait (&status) < 0)	
       perror ("wait");
+	
+    free(argv);
+	
 }
 
 
