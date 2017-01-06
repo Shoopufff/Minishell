@@ -55,6 +55,7 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 	int LastZero = 0;
 	slength = strlen(line);
 	char StatBuff[12];
+	//Global Variables passed from Main
 	extern int ArgcG;
 	extern char **ArgvG;
 	extern int ShiftOffset;
@@ -88,18 +89,14 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 				goto checkagain;
 			}		
 			i++;
-			printf("I made it to all files, not really\n");
 			//All files except ones ending in '.'
 			if (line[i] == ('\0' || ' ' || '"' || '*')){
-				printf("I made it to all files1\n");
 				if ((Current->d_name[0] != '.')){
 					memcpy(FileName, Current->d_name, strlen(Current->d_name));
 					counter = 0;
-					printf("I made it to all files2\n");
 					while (FileName[counter] != '\0'){
 						expandedline[temp] = FileName[counter];
 						temp++;
-						printf("I made it to all files\n");
 					}
 					//Space between files
 					expandedline[temp] = ' ';
@@ -133,7 +130,6 @@ int expand(char *line, char *expandedline, int EXPANDLEN){
 						while (FileName[counter] != '\0'){
 							expandedline[temp] = FileName[counter];
 							temp++;
-							printf("I made it to suffixrules");
 						}
 						//Space between files
 						expandedline[temp] = ' ';

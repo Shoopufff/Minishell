@@ -91,9 +91,14 @@ int main (int mainargc, char **mainargv)
 
     }
 
+	
     if (!feof(stdin))
         perror ("read");
-	
+		
+	if (feof(stdin)){
+		fclose(stdin);
+		return 0;
+	}
 	
     return 0;		/* Also known as exit (0); */
 }

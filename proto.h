@@ -1,5 +1,3 @@
-/*    $Id: $    */
-
 /*
    Eric Ambrose
    February 14, 2014

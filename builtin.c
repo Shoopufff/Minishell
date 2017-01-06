@@ -189,7 +189,7 @@ void sstat(int argc, char **argv){
         fprintf(stderr, "Too few arguments \n");
 	}
 	
- 
+	//Struct used to retrieve Stat values
     struct stat fileStat;
 	
 	time_t time = fileStat.st_mtime;
